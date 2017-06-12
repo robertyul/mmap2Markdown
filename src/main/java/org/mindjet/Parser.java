@@ -1,5 +1,6 @@
 package org.mindjet;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
 
@@ -74,22 +75,28 @@ public class Parser {
 			root = parse(elm, "");
 
 		} catch (Exception e) {
+			System.out.print(e.getCause() + ExceptionUtils.getStackTrace(e));
 		}
 	}
 
 	public Topic parse(Element elm, String path) {
 		Topic t = new Topic();
-		t.text = elm.element("Text").attributeValue("PlainText");
-		t.path = path + "/" + t.text/*.trim()*/;
+		try {
+			t.text = elm.element("Text").attributeValue("PlainText");
+			t.path = path + "/" + t.text/*.trim()*/;
 
-		Element elms = elm.element("SubTopics");
-		if (elms != null) {
-			List l = elms.elements("Topic");
-			for (int i = 0; i < l.size(); i++) {
-				Topic t1 = parse((Element) l.get(i), t.path);
-				t1.parent = t;
-				t.children.add(t1);
+			Element elms = elm.element("SubTopics");
+			if (elms != null) {
+				List l = elms.elements("Topic");
+				for (int i = 0; i < l.size(); i++) {
+					Topic t1 = parse((Element) l.get(i), t.path);
+					t1.parent = t;
+					t.children.add(t1);
+				}
 			}
+		}catch (Exception e){
+			t.text = "wrong";
+			t.path = path + "/" + t.text;
 		}
 		return t;
 	}
